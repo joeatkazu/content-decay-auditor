@@ -17,11 +17,31 @@ st.set_page_config(page_title="Content Decay Detector", page_icon="📉", layout
 
 # --- 2. HELPER FUNCTIONS ---
 
+import json
+import tempfile
+
 def create_flow():
+    # Check if we are on Render or Local
+    if os.getenv('IS_PRODUCTION'):
+        # On Render: Use the Environment Variable
+        secrets_dict = json.loads(os.getenv('GSC_CLIENT_SECRETS'))
+        
+        # We must write it to a temporary file because the Google library 
+        # specifically requires a file path, not a dictionary.
+        with tempfile.NamedTemporaryFile(mode='w+', delete=False, suffix='.json') as temp_file:
+            json.dump(secrets_dict, temp_file)
+            temp_path = temp_file.name
+            
+        redirect_uri = "https://your-app-name.onrender.com" # Update this!
+    else:
+        # On Local: Use the file
+        temp_path = 'client_secrets.json'
+        redirect_uri = "http://localhost:8501"
+
     return Flow.from_client_secrets_file(
-        'client_secrets.json',
+        temp_path,
         scopes=SCOPES,
-        redirect_uri=REDIRECT_URI
+        redirect_uri=redirect_uri
     )
 
 def get_gsc_data(service, site_url, start_date, end_date):
