@@ -32,7 +32,7 @@ def create_flow():
             json.dump(secrets_dict, temp_file)
             temp_path = temp_file.name
             
-        redirect_uri = "https://your-app-name.onrender.com" # Update this!
+        redirect_uri = "https://content-decay-auditor.onrender.com" # Update this!
     else:
         # On Local: Use the file
         temp_path = 'client_secrets.json'
