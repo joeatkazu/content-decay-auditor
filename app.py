@@ -21,20 +21,25 @@ import json
 import tempfile
 
 def create_flow():
-    # Check if we are on Render or Local
+    # Detect if we are running on Render (Production) or your Mac (Local)
     if os.getenv('IS_PRODUCTION'):
-        # On Render: Use the Environment Variable
+        # 1. Get the secrets from the Render Environment Variable
         secrets_dict = json.loads(os.getenv('GSC_CLIENT_SECRETS'))
         
-        # We must write it to a temporary file because the Google library 
-        # specifically requires a file path, not a dictionary.
         with tempfile.NamedTemporaryFile(mode='w+', delete=False, suffix='.json') as temp_file:
             json.dump(secrets_dict, temp_file)
             temp_path = temp_file.name
             
-        redirect_uri = "https://content-decay-auditor.onrender.com" # Update this!
+        # 2. FIX: Automatically detect the Render URL
+        # Render provides the 'RENDER_EXTERNAL_URL' variable by default
+        redirect_uri = os.getenv('RENDER_EXTERNAL_URL')
+        
+        # Ensure there is no trailing slash for the Google Cloud comparison
+        if redirect_uri.endswith('/'):
+            redirect_uri = redirect_uri[:-1]
+            
     else:
-        # On Local: Use the file
+        # Local Development settings
         temp_path = 'client_secrets.json'
         redirect_uri = "http://localhost:8501"
 
